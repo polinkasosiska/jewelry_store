@@ -1,0 +1,74 @@
+package com.sysoliatina.jewelrystore.presentation.ui.dialogs
+
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.sysoliatina.jewelrystore.R
+import com.sysoliatina.jewelrystore.common.showSnackbar
+import com.sysoliatina.jewelrystore.common.subscribeInUI
+import com.sysoliatina.jewelrystore.common.trimString
+import com.sysoliatina.jewelrystore.databinding.DialogAddCartItemBinding
+import com.sysoliatina.jewelrystore.databinding.DialogAddProductTypeBinding
+import com.sysoliatina.jewelrystore.presentation.viewmodels.ClientProductsViewModel
+import com.sysoliatina.jewelrystore.presentation.viewmodels.ProductTypesViewModel
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class AddCartItemDialogFragment : BottomSheetDialogFragment() {
+
+    private var _binding: DialogAddCartItemBinding? = null
+    private val binding get() = _binding!!
+    val viewModel: ClientProductsViewModel by viewModels(
+        ownerProducer = { requireParentFragment() }
+    )
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = DialogAddCartItemBinding.inflate(inflater, container, false)
+        return binding.root
+
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val bottomSheet = view.parent as View
+        bottomSheet.backgroundTintMode = PorterDuff.Mode.CLEAR
+        bottomSheet.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+        bottomSheet.setBackgroundColor(Color.TRANSPARENT)
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
+        with(binding) {
+            btnSave.setOnClickListener {
+                viewModel.addCartItem(
+                    requireArguments().getInt(ARG_PRODUCT_ID),
+                    inputCount.text.trimString().toInt()
+                )
+                dismiss()
+            }
+        }
+    }
+
+    companion object {
+        private const val ARG_PRODUCT_ID = "productId"
+
+        fun newInstance(productId: Int): AddCartItemDialogFragment {
+            return AddCartItemDialogFragment().apply {
+                arguments = bundleOf(ARG_PRODUCT_ID to productId)
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
